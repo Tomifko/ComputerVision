@@ -16,6 +16,7 @@ namespace testPV
     {
         // Array used to store values of "histogram"
         double[] bins = new double[36];
+        Stopwatch stopwatch = new Stopwatch();
 
         public Form1()
         {
@@ -29,31 +30,103 @@ namespace testPV
         /// <param name="e"></param>
         private void Form1_Load(object sender, EventArgs e)
         {
+            stopwatch.Start();
             // Load image and convert it to grayscale
-            Bitmap image =  new Bitmap("C:\\Users\\Tomifko\\Desktop\\SIFT-MATLAB-master\\images\\a.png");
+            Bitmap image =  new Bitmap("C:\\Users\\Tomifko\\Desktop\\SIFT-MATLAB-master\\images\\bolt.jpg");
             Bitmap grayscaleImg = MakeGrayscale(image);
 
             // List of cells.
             List<Bitmap> listOfCells = GetCells(grayscaleImg);
             List<double[]> listOfHistograms = new List<double[]>();
+            
+            // List of descriptors.
+            List<Bitmap> listOfDescriptors = new List<Bitmap>();
+            //Bitmap descriptor = new Bitmap("C:\\Users\\Tomifko\\Desktop\\SIFT-MATLAB-master\\images\\desc.jpg");
 
             // Creates a list of histograms for each cell.
             foreach (Bitmap cell in listOfCells)
             {
-                listOfHistograms.Add(GetHistForEveryCell(cell));
+                double[] hist = GetHistForEveryCell(cell);
+                listOfHistograms.Add(hist);
+
+                //Find index of max value in array
+                double maxValue = hist.Max();
+                int maxIndex = hist.ToList().IndexOf(maxValue);
+
+                listOfDescriptors.Add(VisualizeDescriptor(maxIndex, cell));
             }
 
-            Bitmap descriptor = new Bitmap(8, 8);
-            pictureBox1.Image = listOfCells[55];
 
+
+            //descriptor.SetPixel(7, 7, Color.Black);
+            //descriptor.SetResolution(96, 96);
+            //DrawHorizontalLine(descriptor);
+            //listOfCells[27].Save("C:\\Users\\Tomifko\\Desktop\\SIFT-MATLAB-master\\images\\chichi.jpg");
+            //pictureBox1.Image = listOfCells[13];
+            //pictureBox2.Image = image;
+            //pictureBox1.SizeMode = PictureBoxSizeMode.StretchImage;
+
+            Bitmap result = RecreateBitmapFromCells(listOfDescriptors, grayscaleImg);
+            pictureBox2.Image = result;
+
+            result.Save(("C:\\Users\\Tomifko\\Desktop\\SIFT-MATLAB-master\\images\\chichi.jpg"));
+            var time = stopwatch.Elapsed;
+            Debug.Print(time.ToString());
+        }
+
+        private Bitmap VisualizeDescriptor(int index, Bitmap bmp)
+        {
+            Bitmap tempBmp = null;
+
+            if (index < 2 || index > 32) tempBmp = DrawVerticalLine(bmp);
+            if (index > 13 && index < 20) tempBmp = DrawVerticalLine(bmp);
+            
+            if (index > 5 && index < 11) tempBmp = DrawHorizontalLine(bmp);
+            if (index > 23 && index < 29) tempBmp = DrawHorizontalLine(bmp);
+
+            if (index >= 2 && index < 6) tempBmp = DrawLineFromLeftDownToRightUp(bmp);
+            if (index >= 20 && index < 24) tempBmp = DrawLineFromLeftDownToRightUp(bmp);
+
+            if (index >= 11 && index < 14) tempBmp = DrawLineFromLeftUpToRightDown(bmp);
+            if (index >= 29 && index < 33) tempBmp = DrawLineFromLeftUpToRightDown(bmp);
+
+            return tempBmp;
+        }
+
+        private Bitmap DrawLineFromLeftDownToRightUp(Bitmap bmp)
+        {
             for (int i = 0; i < 8; i++)
             {
-                listOfCells[55].GetPixel(i, 4).R = 5;
-
-                listOfCells[55].SetPixel(i, 4, listOfCells[55].GetPixel(i, 4).GetBrightness() + 10);
+                bmp.SetPixel(i, bmp.Width - i - 1, Color.White);
             }
+            return bmp;
+        }
 
-            pictureBox1.SizeMode = PictureBoxSizeMode.StretchImage;
+        private Bitmap DrawLineFromLeftUpToRightDown(Bitmap bmp)
+        {
+            for (int i = 0; i < 8; i++)
+            {
+                bmp.SetPixel(i, i, Color.White);
+            }
+            return bmp;
+        }
+
+        private Bitmap DrawHorizontalLine(Bitmap bmp)
+        {
+            for (int i = 0; i < 8; i++)
+            {
+                bmp.SetPixel(i, 4, Color.White);
+            }
+            return bmp;
+        }
+
+        private Bitmap DrawVerticalLine(Bitmap bmp)
+        {
+            for (int i = 0; i < 8; i++)
+            {
+                bmp.SetPixel(4, i, Color.White);
+            }
+            return bmp;
         }
 
         /// <summary>
@@ -115,6 +188,27 @@ namespace testPV
             }
             tempMap.Dispose();
             return listOfCells;
+        }
+
+        private Bitmap RecreateBitmapFromCells(List<Bitmap> cells, Bitmap originalImg)
+        {
+            Bitmap finalBitmap = new Bitmap(originalImg.Width, originalImg.Height);
+                                //8
+            for (int i = 0; i < originalImg.Width / 8; i++)
+            {                       //16
+                for (int j = 0; j < originalImg.Height / 8; j++)
+                {
+                    for (int x = 0; x < 8; x++)
+                    {
+                        for (int y = 0; y < 8; y++)
+                        {
+                            finalBitmap.SetPixel(x + (i * 8), y + (j * 8), cells[(i * 16) + j].GetPixel(x, y));
+                        }
+                    }
+                }
+            }
+
+            return finalBitmap;
         }
 
         /// <summary>
