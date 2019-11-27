@@ -14,15 +14,21 @@ namespace testPV
 {
     public partial class Form1 : Form
     {
+        #region Variables
         // Array used to store values of "histogram"
         double[] bins = new double[36];
+        // Stopwatch used to measure times.
         Stopwatch stopwatch = new Stopwatch();
+        #endregion
 
+        #region Form initialization
         public Form1()
         {
             InitializeComponent();
         }
+        #endregion
 
+        #region Main
         /// <summary>
         /// Main of function.
         /// </summary>
@@ -30,69 +36,75 @@ namespace testPV
         /// <param name="e"></param>
         private void Form1_Load(object sender, EventArgs e)
         {
+            List<TimeSpan> timeSpans = new List<TimeSpan>();
+
             stopwatch.Start();
-            // Load image and convert it to grayscale
-            Bitmap image =  new Bitmap("C:\\Users\\Tomifko\\Desktop\\SIFT-MATLAB-master\\images\\bolt.jpg");
-            Bitmap grayscaleImg = MakeGrayscale(image);
-
-            // List of cells.
-            List<Bitmap> listOfCells = GetCells(grayscaleImg);
-            List<double[]> listOfHistograms = new List<double[]>();
-            
-            // List of descriptors.
-            List<Bitmap> listOfDescriptors = new List<Bitmap>();
-            //Bitmap descriptor = new Bitmap("C:\\Users\\Tomifko\\Desktop\\SIFT-MATLAB-master\\images\\desc.jpg");
-
-            // Creates a list of histograms for each cell.
-            foreach (Bitmap cell in listOfCells)
+            for (int i = 0; i < 1000; i++)
             {
-                double[] hist = GetHistForEveryCell(cell);
-                listOfHistograms.Add(hist);
+                stopwatch.Restart();
+                // Load image and convert it to grayscale
+                Bitmap image = new Bitmap("C:\\Users\\Tomifko\\Desktop\\SIFT-MATLAB-master\\images\\bolt.jpg");
+                Bitmap grayscaleImg = MakeGrayscale(image);
 
-                //Find index of max value in array
-                double maxValue = hist.Max();
-                int maxIndex = hist.ToList().IndexOf(maxValue);
+                // Create list of cells == divide image to separate parts.
+                List<Bitmap> listOfCells = GetCells(grayscaleImg);
+                List<double[]> listOfHistograms = new List<double[]>();
 
-                listOfDescriptors.Add(VisualizeDescriptor(maxIndex, cell));
+                // Create list of descriptors == used to store cells with visualised descriptors.
+                List<Bitmap> listOfDescriptors = new List<Bitmap>();
+                //Bitmap descriptor = new Bitmap("C:\\Users\\Tomifko\\Desktop\\SIFT-MATLAB-master\\images\\desc.jpg");
+
+                // Creates a list of histograms for each cell.
+                foreach (Bitmap cell in listOfCells)
+                {
+                    double[] hist = GetHistForEveryCell(cell);
+                    listOfHistograms.Add(hist);
+
+                    //Find index of max value in array and index of it.
+                    double maxValue = hist.Max();
+                    int maxIndex = hist.ToList().IndexOf(maxValue);
+
+                    listOfDescriptors.Add(VisualizeDescriptor(maxIndex, cell));
+                }
+
+                // Connect cells to one final image.
+                Bitmap result = RecreateBitmapFromCells(listOfDescriptors, grayscaleImg);
+                pictureBox2.Image = result;
+
+                // Save final image to computer.
+                result.Save(("C:\\Users\\Tomifko\\Desktop\\SIFT-MATLAB-master\\images\\final.jpg"));
+
+                // Measure time passed from beginning of program and add this value to list.
+                // List is used to store 1000 of this values.
+                timeSpans.Add(stopwatch.Elapsed);
             }
 
-
-
-            //descriptor.SetPixel(7, 7, Color.Black);
-            //descriptor.SetResolution(96, 96);
-            //DrawHorizontalLine(descriptor);
-            //listOfCells[27].Save("C:\\Users\\Tomifko\\Desktop\\SIFT-MATLAB-master\\images\\chichi.jpg");
-            //pictureBox1.Image = listOfCells[13];
-            //pictureBox2.Image = image;
-            //pictureBox1.SizeMode = PictureBoxSizeMode.StretchImage;
-
-            Bitmap result = RecreateBitmapFromCells(listOfDescriptors, grayscaleImg);
-            pictureBox2.Image = result;
-
-            result.Save(("C:\\Users\\Tomifko\\Desktop\\SIFT-MATLAB-master\\images\\chichi.jpg"));
-            var time = stopwatch.Elapsed;
-            Debug.Print(time.ToString());
-        }
-
-        private Bitmap VisualizeDescriptor(int index, Bitmap bmp)
-        {
-            Bitmap tempBmp = null;
-
-            if (index < 2 || index > 32) tempBmp = DrawVerticalLine(bmp);
-            if (index > 13 && index < 20) tempBmp = DrawVerticalLine(bmp);
+            // After 1000 measurements calculate average value of time passed and write it to .txt file.
+            using (System.IO.StreamWriter file =
+                new System.IO.StreamWriter(@"C:\\Users\\Tomifko\\Desktop\\WriteLines2.txt", true))
+                {
+                    file.WriteLine("Average time: " + AverageTime.Average(timeSpans));
+                }
             
-            if (index > 5 && index < 11) tempBmp = DrawHorizontalLine(bmp);
-            if (index > 23 && index < 29) tempBmp = DrawHorizontalLine(bmp);
+            // Write every value to .txt file.
+            foreach(TimeSpan times in timeSpans)
+            {
+                using (System.IO.StreamWriter file =
+                    new System.IO.StreamWriter(@"C:\\Users\\Tomifko\\Desktop\\WriteLines2.txt", true))
+                    {
+                        file.WriteLine(times);
+                    }
+            }
 
-            if (index >= 2 && index < 6) tempBmp = DrawLineFromLeftDownToRightUp(bmp);
-            if (index >= 20 && index < 24) tempBmp = DrawLineFromLeftDownToRightUp(bmp);
-
-            if (index >= 11 && index < 14) tempBmp = DrawLineFromLeftUpToRightDown(bmp);
-            if (index >= 29 && index < 33) tempBmp = DrawLineFromLeftUpToRightDown(bmp);
-
-            return tempBmp;
         }
+        #endregion
 
+        #region Line drawing
+        /// <summary>
+        /// Draw line from left down corner to right up corner.
+        /// </summary>
+        /// <param name="bmp"></param>
+        /// <returns> Input image with requested line added. </returns>
         private Bitmap DrawLineFromLeftDownToRightUp(Bitmap bmp)
         {
             for (int i = 0; i < 8; i++)
@@ -102,6 +114,11 @@ namespace testPV
             return bmp;
         }
 
+        /// <summary>
+        /// Draw line from left up corner to rigth down corner.
+        /// </summary>
+        /// <param name="bmp"></param>
+        /// <returns> Input image with requested line added. </returns>
         private Bitmap DrawLineFromLeftUpToRightDown(Bitmap bmp)
         {
             for (int i = 0; i < 8; i++)
@@ -111,6 +128,11 @@ namespace testPV
             return bmp;
         }
 
+        /// <summary>
+        /// Draws horizontal line across image.
+        /// </summary>
+        /// <param name="bmp"></param>
+        /// <returns> Input image with requested line added. </returns>
         private Bitmap DrawHorizontalLine(Bitmap bmp)
         {
             for (int i = 0; i < 8; i++)
@@ -120,6 +142,11 @@ namespace testPV
             return bmp;
         }
 
+        /// <summary>
+        /// Draws vertical line across image.
+        /// </summary>
+        /// <param name="bmp"></param>
+        /// <returns> Input image with requested line added. </returns>
         private Bitmap DrawVerticalLine(Bitmap bmp)
         {
             for (int i = 0; i < 8; i++)
@@ -128,32 +155,41 @@ namespace testPV
             }
             return bmp;
         }
+        #endregion
 
+        #region Cell operations
         /// <summary>
         /// Create "histogram" for every cell.
         /// </summary>
         /// <param name="cell"></param>
-        /// <returns >Returns array which represents histogram. </returns>
+        /// <returns> Returns array which represents histogram. </returns>
         private double[] GetHistForEveryCell(Bitmap cell)
         {
+            // Reset this array every time this funcion is called.
             bins = new double[36];
 
             for (int i = 1; i < cell.Width - 1; i++)
             {
                 for (int j = 1; j < cell.Height - 1; j++)
                 {
+                    // Calculate brightness of surrounding pixels (used to calculate gradients).
                     int x1 = GetBrightness(cell.GetPixel(i + 1, j));
                     int x2 = GetBrightness(cell.GetPixel(i - 1, j));
                     int y1 = GetBrightness(cell.GetPixel(i, j + 1));
                     int y2 = GetBrightness(cell.GetPixel(i, j - 1));
 
+                    // Calculate gradients for both x and y directions.
                     int Gx = GetGradient(x1, x2);
                     int Gy = GetGradient(y1, y2);
 
+                    // Calculate magnitude (brightness) and orientation of image.
                     double magnitude = GetMagnitude(Gx, Gy);
-                    double orientation = GetOrientation(Gx, Gy) + 180;              // Len aby, len aby !!!!!!!!!!!!!!!!!!!
+                    double orientation = GetOrientation(Gx, Gy) + 180;
 
+                    // Replace NaN values with zero.
                     if (double.IsNaN(orientation)) orientation = 0;
+
+                    //Create histogram from given magnitude and orientation.
                     CreateHist(magnitude, orientation);
                 }
             }
@@ -161,18 +197,19 @@ namespace testPV
         }
 
         /// <summary>
-        /// Divide input image to separate cells.
+        /// Divide input image to separate cells (diferent parts of image).
         /// </summary>
         /// <param name="image"></param>
-        /// <returns> List of cells </returns>
+        /// <returns> Image divided to separate parts. </returns>
         private List<Bitmap> GetCells(Bitmap image)
         {
+            // Create list which will be used to store each cell.
             List<Bitmap> listOfCells = new List<Bitmap>();
-
+            // Create temporary bitmap used to store current cell.
             Bitmap tempMap = new Bitmap(8, 8);
-                                //8 -> 0-7 v cykle
+
             for (int i = 0; i < image.Width / 8; i++)
-            {                       //16
+            {
                 for (int j = 0; j < image.Height / 8; j++)
                 {
                     for (int x = 0; x < 8; x++)
@@ -183,19 +220,28 @@ namespace testPV
                         }
                     }
                     listOfCells.Add(tempMap);
+                    // Reset bitmap every time next cell is created
                     tempMap = new Bitmap(8, 8);
                 }
             }
+            // Dispose this object because it is no longer needed.
             tempMap.Dispose();
             return listOfCells;
         }
 
+        /// <summary>
+        /// Recreate image from cells with visualized descriptors.
+        /// </summary>
+        /// <param name="cells"></param>
+        /// <param name="originalImg"></param>
+        /// <returns></returns>
         private Bitmap RecreateBitmapFromCells(List<Bitmap> cells, Bitmap originalImg)
         {
+            // Create value used to store final image.
             Bitmap finalBitmap = new Bitmap(originalImg.Width, originalImg.Height);
-                                //8
+
             for (int i = 0; i < originalImg.Width / 8; i++)
-            {                       //16
+            {
                 for (int j = 0; j < originalImg.Height / 8; j++)
                 {
                     for (int x = 0; x < 8; x++)
@@ -207,10 +253,36 @@ namespace testPV
                     }
                 }
             }
-
             return finalBitmap;
         }
 
+        /// <summary>
+        /// Visualize descriptor for every cell based on index of maximum value from histogram.
+        /// </summary>
+        /// <param name="index"></param>
+        /// <param name="bmp"></param>
+        /// <returns> Image with visualized descriptor. </returns>
+        private Bitmap VisualizeDescriptor(int index, Bitmap bmp)
+        {
+            Bitmap tempBmp = null;
+
+            if (index < 2 || index > 32) tempBmp = DrawVerticalLine(bmp);
+            if (index > 13 && index < 20) tempBmp = DrawVerticalLine(bmp);
+
+            if (index > 5 && index < 11) tempBmp = DrawHorizontalLine(bmp);
+            if (index > 23 && index < 29) tempBmp = DrawHorizontalLine(bmp);
+
+            if (index >= 2 && index < 6) tempBmp = DrawLineFromLeftDownToRightUp(bmp);
+            if (index >= 20 && index < 24) tempBmp = DrawLineFromLeftDownToRightUp(bmp);
+
+            if (index >= 11 && index < 14) tempBmp = DrawLineFromLeftUpToRightDown(bmp);
+            if (index >= 29 && index < 33) tempBmp = DrawLineFromLeftUpToRightDown(bmp);
+
+            return tempBmp;
+        }
+        #endregion
+
+        #region Histogram
         /// <summary>
         /// Create "histogram" from magnitude and orientation values.
         /// </summary>
@@ -222,9 +294,10 @@ namespace testPV
             {
                 if ((i * 10) <= ori && ori < (i * 10) + 10) bins[i] += mag;
             }
-            //return bins;
         }
+        #endregion
 
+        #region Calculate operations
         /// <summary>
         /// Get orientation of pixel based on given gradients.
         /// </summary>
@@ -267,7 +340,9 @@ namespace testPV
         {
             return (int)Math.Round((0.2126 * color.R + 0.7152 * color.G + 0.0722 * color.B));
         }
+        #endregion
 
+        #region Grayscale operation
         /// <summary>
         /// Converts image to grayscale.
         /// </summary>
@@ -308,5 +383,17 @@ namespace testPV
             }
             return newBitmap;
         }
+        #endregion
     }
+    #region Compute average time from measurements
+    public static class AverageTime
+    {
+        /// <summary>
+        /// Static function used to compute average time from measurements from list of TimeSpans.
+        /// </summary>
+        /// <param name="spans"></param>
+        /// <returns> Average time. </returns>
+        public static TimeSpan Average(this IEnumerable<TimeSpan> spans) => TimeSpan.FromSeconds(spans.Select(s => s.TotalSeconds).Average());
+    }
+    #endregion
 }
