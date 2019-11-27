@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Data;
 using System.Diagnostics;
 using System.Drawing;
+using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.Linq;
 using System.Text;
@@ -30,17 +31,19 @@ namespace testPV
 
         #region Main
         /// <summary>
-        /// Main of function.
+        /// Main of program.
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
         private void Form1_Load(object sender, EventArgs e)
         {
+            DrawArrow(0, 50, "LeftDown");
+            //DrawArrow(0, 50, "Up");
             List<TimeSpan> timeSpans = new List<TimeSpan>();
 
-            stopwatch.Start();
-            for (int i = 0; i < 1000; i++)
-            {
+            //stopwatch.Start();
+            //for (int i = 0; i < 1000; i++)
+            //{
                 stopwatch.Restart();
                 // Load image and convert it to grayscale
                 Bitmap image = new Bitmap("C:\\Users\\Tomifko\\Desktop\\SIFT-MATLAB-master\\images\\bolt.jpg");
@@ -69,35 +72,55 @@ namespace testPV
 
                 // Connect cells to one final image.
                 Bitmap result = RecreateBitmapFromCells(listOfDescriptors, grayscaleImg);
+                pictureBox1.Image = image;
                 pictureBox2.Image = result;
 
+                
+                
                 // Save final image to computer.
                 result.Save(("C:\\Users\\Tomifko\\Desktop\\SIFT-MATLAB-master\\images\\final.jpg"));
 
                 // Measure time passed from beginning of program and add this value to list.
                 // List is used to store 1000 of this values.
-                timeSpans.Add(stopwatch.Elapsed);
-            }
+                //timeSpans.Add(stopwatch.Elapsed);
+            //}
 
             // After 1000 measurements calculate average value of time passed and write it to .txt file.
-            using (System.IO.StreamWriter file =
-                new System.IO.StreamWriter(@"C:\\Users\\Tomifko\\Desktop\\WriteLines2.txt", true))
-                {
-                    file.WriteLine("Average time: " + AverageTime.Average(timeSpans));
-                }
+            //using (System.IO.StreamWriter file =
+            //    new System.IO.StreamWriter(@"C:\\Users\\Tomifko\\Desktop\\WriteLines2.txt", true))
+            //    {
+            //        file.WriteLine("Average time: " + AverageTime.Average(timeSpans));
+            //    }
             
-            // Write every value to .txt file.
-            foreach(TimeSpan times in timeSpans)
-            {
-                using (System.IO.StreamWriter file =
-                    new System.IO.StreamWriter(@"C:\\Users\\Tomifko\\Desktop\\WriteLines2.txt", true))
-                    {
-                        file.WriteLine(times);
-                    }
-            }
+            //// Write every value to .txt file.
+            //foreach(TimeSpan times in timeSpans)
+            //{
+            //    using (System.IO.StreamWriter file =
+            //        new System.IO.StreamWriter(@"C:\\Users\\Tomifko\\Desktop\\WriteLines2.txt", true))
+            //        {
+            //            file.WriteLine(times);
+            //        }
+            //}
 
         }
         #endregion
+
+
+        private void DrawArrow(PaintEventArgs e)
+        {
+            using (Pen p = new Pen(Color.Black))
+            using (GraphicsPath capPath = new GraphicsPath())
+            {
+                // A triangle
+                capPath.AddLine(-20, 0, 20, 0);
+                capPath.AddLine(-20, 0, 0, 20);
+                capPath.AddLine(0, 20, 20, 0);
+
+                p.CustomEndCap = new System.Drawing.Drawing2D.CustomLineCap(null, capPath);
+
+                e.Graphics.DrawLine(p, 0, 50, 100, 50);
+            }
+        }
 
         #region Line drawing
         /// <summary>
@@ -384,7 +407,81 @@ namespace testPV
             return newBitmap;
         }
         #endregion
+
+
+        // Nepotrebujem start point pretoze vzdy vytvorim novu bitmapu ktoru ulozim do listu
+        private void DrawArrow(int length, string direction)
+        {
+            Bitmap b = new Bitmap(this.pictureBox3.ClientSize.Width, this.pictureBox3.ClientSize.Height);
+
+            using (Graphics g = Graphics.FromImage(b))
+            {
+                g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
+            }
+
+            this.pictureBox3.Image = b;
+
+            _arrow = new Bitmap(128, 128);
+
+            using (Graphics g = Graphics.FromImage(_arrow))
+            {
+                g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
+                using (Pen p = new Pen(Color.Black, 1))
+                {
+                    System.Drawing.Drawing2D.AdjustableArrowCap l = new System.Drawing.Drawing2D.AdjustableArrowCap(3, 4);
+                    p.CustomEndCap = l;
+                    switch (direction)
+                    {
+                        case "Down":
+                            g.DrawLine(p, new PointF(_arrow.Width / 2F, _arrow.Height / 2F), new PointF(_arrow.Width / 2F, (_arrow.Height / 2F) + length));
+                            break;
+                        case "Up":
+                            g.DrawLine(p, new PointF(_arrow.Width / 2F, _arrow.Height / 2F), new PointF(_arrow.Width / 2F, (_arrow.Height / 2F) - length));
+                            break;
+                        case "Right":
+                            g.DrawLine(p, new PointF(_arrow.Width / 2F, _arrow.Height / 2F), new PointF((_arrow.Width / 2F) + length, _arrow.Height / 2F));
+                            break;
+                        case "Left":
+                            g.DrawLine(p, new PointF(_arrow.Width / 2F, _arrow.Height / 2F), new PointF((_arrow.Width / 2F) - length, _arrow.Height / 2F));
+                            break;
+
+                        case "RightUp":
+                            g.DrawLine(p, new PointF(_arrow.Width / 2F, _arrow.Height / 2F), new PointF((_arrow.Width / 2F) + length, (_arrow.Height / 2F) - length));
+                            break;
+                        case "RightDown":
+                            g.DrawLine(p, new PointF(_arrow.Width / 2F, _arrow.Height / 2F), new PointF((_arrow.Width / 2F) + length, (_arrow.Height / 2F) + length));
+                            break;
+                        case "LeftUp":
+                            g.DrawLine(p, new PointF(_arrow.Width / 2F, _arrow.Height / 2F), new PointF((_arrow.Width / 2F) - length, (_arrow.Height / 2F) - length));
+                            break;
+                        case "LeftDown":
+                            g.DrawLine(p, new PointF(_arrow.Width / 2F, _arrow.Height / 2F), new PointF((_arrow.Width / 2F) - length, (_arrow.Height / 2F) + length));
+                            break;
+                    }
+                }
+            }
+        }
+
+        Bitmap _arrow = null;
+
+        private void pictureBox3_Paint(object sender, PaintEventArgs e)
+        {
+            if (_arrow != null)
+            {
+                e.Graphics.TranslateTransform(-this.pictureBox3.Image.Width / 2F, -this.pictureBox3.Image.Height / 2F);
+                //e.Graphics.RotateTransform(_rot, System.Drawing.Drawing2D.MatrixOrder.Append);
+                e.Graphics.TranslateTransform(this.pictureBox3.Image.Width / 2F, this.pictureBox3.Image.Height / 2F, System.Drawing.Drawing2D.MatrixOrder.Append);
+                e.Graphics.DrawImage(_arrow, new PointF((this.pictureBox3.Image.Width - _arrow.Width) / 2F,
+                    (this.pictureBox3.Image.Height - _arrow.Height) / 2F));
+            }
+        }
     }
+
+
+
+
+
+
     #region Compute average time from measurements
     public static class AverageTime
     {
