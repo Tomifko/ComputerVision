@@ -39,7 +39,7 @@ namespace testPV
         /// <param name="e"></param>
         private void Form1_Load(object sender, EventArgs e)
         {
-            DrawArrow(50, "LeftDown");
+            //DrawArrow(50, "Down");
             //DrawArrow(0, 50, "Up");
             List<TimeSpan> timeSpans = new List<TimeSpan>();
 
@@ -59,23 +59,40 @@ namespace testPV
                 List<Bitmap> listOfDescriptors = new List<Bitmap>();
                 //Bitmap descriptor = new Bitmap("C:\\Users\\Tomifko\\Desktop\\SIFT-MATLAB-master\\images\\desc.jpg");
 
+                // Create list of descriptors represented with arrays.
+                List<Bitmap> listOfArrayDescriptors = new List<Bitmap>();
+            int i = 0;
                 // Creates a list of histograms for each cell.
                 foreach (Bitmap cell in listOfCells)
-                {
+                { 
                     double[] hist = GetHistForEveryCell(cell);
                     listOfHistograms.Add(hist);
 
-                    //Find index of max value in array and index of it.
+                    // Find index of max value in array and index of it.
                     double maxValue = hist.Max();
                     int maxIndex = hist.ToList().IndexOf(maxValue);
-
+                    // Visualize our implemenation of descriptor.
                     listOfDescriptors.Add(VisualizeDescriptor(maxIndex, cell));
+
+                    // Visualize descriptor with arrows
+                    Bitmap tmpBmp = VisualizeDescriptor(hist);
+                tmpBmp.Save("C:\\Users\\Tomifko\\Desktop\\test\\pokus" + i + ".jpg");
+                i++;
+                    Bitmap resizedArrayDescriptor = new Bitmap(tmpBmp, new Size(128, 128));
+                    listOfArrayDescriptors.Add(resizedArrayDescriptor);
                 }
 
-                // Connect cells to one final image.
-                Bitmap result = RecreateBitmapFromCells(listOfDescriptors, grayscaleImg);
+            // Connect cells to one final image.
+                Bitmap result = new Bitmap(64, 128);
+                result.SetResolution(1024, 1024);
+            
+                result = RecreateBitmapFromCells(listOfDescriptors, grayscaleImg);
                 pictureBox1.Image = image;
                 pictureBox2.Image = result;
+
+                Bitmap resultArrayDescriptor = RecreateBitmapFromCells(listOfArrayDescriptors, grayscaleImg);
+
+            pictureBox3.Image = listOfArrayDescriptors[3];// resultArrayDescriptor;
 
                 
                 
@@ -305,6 +322,35 @@ namespace testPV
 
             return tempBmp;
         }
+
+        private Bitmap VisualizeDescriptor(double[] hist)
+        {
+            // Combine values from histogram to get sets of degrees. 
+            // This sets will are used to draw arrows for visual representation of descriptors.
+            List<double> setsOfDegrees = new List<double>()
+            {
+                // Sorted list of sets of degrees, starting from 0 (+- 2 values).
+                hist[34] + hist[35] + hist[0] + hist[1],
+                hist[2] + hist[3] + hist[4] + hist[5] + hist[6],
+                hist[7] + hist[8] + hist[9] + hist[10],
+                hist[11] + hist[12] + hist[13] + hist[14] + hist[15],
+                hist[16] + hist[17] + hist[18] + hist[19],
+                hist[20] + hist[21] + hist[22] + hist[23] + hist[25],
+                hist[25] + hist[26] + hist[27] + hist[28],
+                hist[29] + hist[30] + hist[31] + hist[32] + hist[33]
+            };
+
+            double maxValue = setsOfDegrees.Max();
+            int indexOfMax = setsOfDegrees.ToList().IndexOf(maxValue);
+
+            // After this, max value should be 50 (max/max = 1 * 50), (0,5/1 = 0,5*50 = 25)
+            List<double> lengthsOfArrows = new List<double>();
+            foreach(double set in setsOfDegrees)
+            {
+                lengthsOfArrows.Add((set / setsOfDegrees[indexOfMax]) * 50);
+            }
+            return DrawArrow(lengthsOfArrows); ;
+        }
         #endregion
 
         #region Histogram
@@ -412,7 +458,7 @@ namespace testPV
 
 
         // Nepotrebujem start point pretoze vzdy vytvorim novu bitmapu ktoru ulozim do listu
-        private void DrawArrow(int length, string direction)
+        private Bitmap DrawArrow(List<double> lengthOfArrows)
         {
             Bitmap b = new Bitmap(this.pictureBox3.ClientSize.Width, this.pictureBox3.ClientSize.Height);
 
@@ -423,7 +469,7 @@ namespace testPV
 
             this.pictureBox3.Image = b;
 
-            _arrow = new Bitmap(128, 128);
+            _arrow = new Bitmap(64, 128);
 
             using (Graphics g = Graphics.FromImage(_arrow))
             {
@@ -432,36 +478,28 @@ namespace testPV
                 {
                     System.Drawing.Drawing2D.AdjustableArrowCap l = new System.Drawing.Drawing2D.AdjustableArrowCap(3, 4);
                     p.CustomEndCap = l;
-                    switch (direction)
-                    {
-                        case "Down":
-                            g.DrawLine(p, new PointF(_arrow.Width / 2F, _arrow.Height / 2F), new PointF(_arrow.Width / 2F, (_arrow.Height / 2F) + length));
-                            break;
-                        case "Up":
-                            g.DrawLine(p, new PointF(_arrow.Width / 2F, _arrow.Height / 2F), new PointF(_arrow.Width / 2F, (_arrow.Height / 2F) - length));
-                            break;
-                        case "Right":
-                            g.DrawLine(p, new PointF(_arrow.Width / 2F, _arrow.Height / 2F), new PointF((_arrow.Width / 2F) + length, _arrow.Height / 2F));
-                            break;
-                        case "Left":
-                            g.DrawLine(p, new PointF(_arrow.Width / 2F, _arrow.Height / 2F), new PointF((_arrow.Width / 2F) - length, _arrow.Height / 2F));
-                            break;
 
-                        case "RightUp":
-                            g.DrawLine(p, new PointF(_arrow.Width / 2F, _arrow.Height / 2F), new PointF((_arrow.Width / 2F) + length, (_arrow.Height / 2F) - length));
-                            break;
-                        case "RightDown":
-                            g.DrawLine(p, new PointF(_arrow.Width / 2F, _arrow.Height / 2F), new PointF((_arrow.Width / 2F) + length, (_arrow.Height / 2F) + length));
-                            break;
-                        case "LeftUp":
-                            g.DrawLine(p, new PointF(_arrow.Width / 2F, _arrow.Height / 2F), new PointF((_arrow.Width / 2F) - length, (_arrow.Height / 2F) - length));
-                            break;
-                        case "LeftDown":
-                            g.DrawLine(p, new PointF(_arrow.Width / 2F, _arrow.Height / 2F), new PointF((_arrow.Width / 2F) - length, (_arrow.Height / 2F) + length));
-                            break;
-                    }
+
+                    // Right        
+                    g.DrawLine(p, new PointF(_arrow.Width / 2F, _arrow.Height / 2F), new PointF((_arrow.Width / 2F) + (float)lengthOfArrows[0], _arrow.Height / 2F));
+                    // RightUp
+                    g.DrawLine(p, new PointF(_arrow.Width / 2F, _arrow.Height / 2F), new PointF((_arrow.Width / 2F) + (float)lengthOfArrows[1], (_arrow.Height / 2F) - (float)lengthOfArrows[1]));
+                    // Up
+                    g.DrawLine(p, new PointF(_arrow.Width / 2F, _arrow.Height / 2F), new PointF(_arrow.Width / 2F, (_arrow.Height / 2F) - (float)lengthOfArrows[2]));
+                    // LeftUp
+                    g.DrawLine(p, new PointF(_arrow.Width / 2F, _arrow.Height / 2F), new PointF((_arrow.Width / 2F) - (float)lengthOfArrows[3], (_arrow.Height / 2F) - (float)lengthOfArrows[3]));
+                    // Left
+                    g.DrawLine(p, new PointF(_arrow.Width / 2F, _arrow.Height / 2F), new PointF((_arrow.Width / 2F) - (float)lengthOfArrows[4], _arrow.Height / 2F));
+                    // LeftDown
+                    g.DrawLine(p, new PointF(_arrow.Width / 2F, _arrow.Height / 2F), new PointF((_arrow.Width / 2F) - (float)lengthOfArrows[5], (_arrow.Height / 2F) + (float)lengthOfArrows[5]));
+                    // Down
+                    g.DrawLine(p, new PointF(_arrow.Width / 2F, _arrow.Height / 2F), new PointF(_arrow.Width / 2F, (_arrow.Height / 2F) + (float)lengthOfArrows[6]));
+                    // RightDown
+                    g.DrawLine(p, new PointF(_arrow.Width / 2F, _arrow.Height / 2F), new PointF((_arrow.Width / 2F) + (float)lengthOfArrows[7], (_arrow.Height / 2F) + (float)lengthOfArrows[7]));
+                    
                 }
             }
+            return new Bitmap(_arrow);
         }
 
 
@@ -473,8 +511,8 @@ namespace testPV
                 e.Graphics.TranslateTransform(-this.pictureBox3.Image.Width / 2F, -this.pictureBox3.Image.Height / 2F);
                 //e.Graphics.RotateTransform(_rot, System.Drawing.Drawing2D.MatrixOrder.Append);
                 e.Graphics.TranslateTransform(this.pictureBox3.Image.Width / 2F, this.pictureBox3.Image.Height / 2F, System.Drawing.Drawing2D.MatrixOrder.Append);
-                e.Graphics.DrawImage(_arrow, new PointF((this.pictureBox3.Image.Width - _arrow.Width) / 2F,
-                    (this.pictureBox3.Image.Height - _arrow.Height) / 2F));
+                //e.Graphics.DrawImage(_arrow, new PointF((this.pictureBox3.Image.Width - _arrow.Width) / 2F,
+                //    (this.pictureBox3.Image.Height - _arrow.Height) / 2F));
             }
         }
     }

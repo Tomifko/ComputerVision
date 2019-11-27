@@ -6,4 +6,4 @@ C:\Users\Tomifko\source\repos\testPV\testPV\obj\Debug\testPV.Properties.Resource
 C:\Users\Tomifko\source\repos\testPV\testPV\obj\Debug\testPV.csproj.GenerateResource.cache
 C:\Users\Tomifko\source\repos\testPV\testPV\obj\Debug\testPV.exe
 C:\Users\Tomifko\source\repos\testPV\testPV\obj\Debug\testPV.pdb
-C:\Users\Tomifko\source\repos\testPV\testPV\obj\Debug\testPV.AverageTime.resources
+C:\Users\Tomifko\source\repos\testPV\testPV\obj\Debug\testPV.Form1.resources
