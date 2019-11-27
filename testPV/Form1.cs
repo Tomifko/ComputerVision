@@ -20,6 +20,8 @@ namespace testPV
         double[] bins = new double[36];
         // Stopwatch used to measure times.
         Stopwatch stopwatch = new Stopwatch();
+        // Arrow used to visualize histograms.
+        Bitmap _arrow = null;
         #endregion
 
         #region Form initialization
@@ -37,7 +39,7 @@ namespace testPV
         /// <param name="e"></param>
         private void Form1_Load(object sender, EventArgs e)
         {
-            DrawArrow(0, 50, "LeftDown");
+            DrawArrow(50, "LeftDown");
             //DrawArrow(0, 50, "Up");
             List<TimeSpan> timeSpans = new List<TimeSpan>();
 
@@ -462,7 +464,7 @@ namespace testPV
             }
         }
 
-        Bitmap _arrow = null;
+
 
         private void pictureBox3_Paint(object sender, PaintEventArgs e)
         {
