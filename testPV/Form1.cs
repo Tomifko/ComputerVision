@@ -40,13 +40,11 @@ namespace testPV
         /// <param name="e"></param>
         private void Form1_Load(object sender, EventArgs e)
         {
-            //DrawArrow(50, "Down");
-            //DrawArrow(0, 50, "Up");
             List<TimeSpan> timeSpans = new List<TimeSpan>();
 
-            //stopwatch.Start();
-            //for (int i = 0; i < 1000; i++)
-            //{
+            stopwatch.Start();
+            for (int i = 0; i < 1000; i++)
+            {
                 stopwatch.Restart();
                 // Load image and convert it to grayscale
                 Bitmap image = new Bitmap("C:\\Users\\Tomifko\\Desktop\\SIFT-MATLAB-master\\images\\bolt.jpg");
@@ -58,10 +56,12 @@ namespace testPV
 
                 // Create list of descriptors == used to store cells with visualised descriptors.
                 List<Bitmap> listOfDescriptors = new List<Bitmap>();
-                //Bitmap descriptor = new Bitmap("C:\\Users\\Tomifko\\Desktop\\SIFT-MATLAB-master\\images\\desc.jpg");
 
                 // Create list of descriptors represented with arrays.
                 List<Bitmap> listOfArrayDescriptors = new List<Bitmap>();
+
+                // Create list used to store visual representation of descriptors.
+                arrows = new List<Bitmap>();
 
                 // Creates a list of histograms for each cell.
                 foreach (Bitmap cell in listOfCells)
@@ -82,64 +82,31 @@ namespace testPV
                     Bitmap resizedArrayDescriptor = new Bitmap(tmpBmp, new Size(8, 8));
                     listOfArrayDescriptors.Add(resizedArrayDescriptor);
                 }
-
-            // Connect cells to one final image.
-                //Bitmap result = new Bitmap(64, 128);
-            
-                Bitmap result = RecreateBitmapFromCells(listOfDescriptors, grayscaleImg);
                 pictureBox1.Image = image;
-                pictureBox2.Image = result;
 
-                Bitmap resultArrayDescriptor = RecreateBitmapFromCells(listOfArrayDescriptors, grayscaleImg);
-
-                pictureBox3.Image = resultArrayDescriptor;
-
-                
-                
-                // Save final image to computer.
-                result.Save(("C:\\Users\\Tomifko\\Desktop\\SIFT-MATLAB-master\\images\\final.jpg"));
-
-                // Measure time passed from beginning of program and add this value to list.
-                // List is used to store 1000 of this values.
-                //timeSpans.Add(stopwatch.Elapsed);
-            //}
+            // Measure time passed from beginning of program and add this value to list.
+            // List is used to store 1000 of this values.
+            timeSpans.Add(stopwatch.Elapsed);
+        }
 
             // After 1000 measurements calculate average value of time passed and write it to .txt file.
-            //using (System.IO.StreamWriter file =
-            //    new System.IO.StreamWriter(@"C:\\Users\\Tomifko\\Desktop\\WriteLines2.txt", true))
-            //    {
-            //        file.WriteLine("Average time: " + AverageTime.Average(timeSpans));
-            //    }
-            
-            //// Write every value to .txt file.
-            //foreach(TimeSpan times in timeSpans)
-            //{
-            //    using (System.IO.StreamWriter file =
-            //        new System.IO.StreamWriter(@"C:\\Users\\Tomifko\\Desktop\\WriteLines2.txt", true))
-            //        {
-            //            file.WriteLine(times);
-            //        }
-            //}
-
-        }
-        #endregion
-
-
-        private void DrawArrow(PaintEventArgs e)
-        {
-            using (Pen p = new Pen(Color.Black))
-            using (GraphicsPath capPath = new GraphicsPath())
+            using (System.IO.StreamWriter file =
+                new System.IO.StreamWriter(@"C:\\Users\\Tomifko\\Desktop\\WriteLines2.txt", true))
             {
-                // A triangle
-                capPath.AddLine(-20, 0, 20, 0);
-                capPath.AddLine(-20, 0, 0, 20);
-                capPath.AddLine(0, 20, 20, 0);
+                file.WriteLine("Average time: " + AverageTime.Average(timeSpans));
+            }
 
-                p.CustomEndCap = new System.Drawing.Drawing2D.CustomLineCap(null, capPath);
-
-                e.Graphics.DrawLine(p, 0, 50, 100, 50);
+            // Write every value to .txt file.
+            foreach (TimeSpan times in timeSpans)
+            {
+                using (System.IO.StreamWriter file =
+                    new System.IO.StreamWriter(@"C:\\Users\\Tomifko\\Desktop\\WriteLines2.txt", true))
+                {
+                    file.WriteLine(times);
+                }
             }
         }
+        #endregion
 
         #region Line drawing
         /// <summary>
@@ -229,7 +196,7 @@ namespace testPV
                     double orientation = GetOrientation(Gx, Gy) + 180;
 
                     // Replace NaN values with zero.
-                    if (double.IsNaN(orientation)) orientation = 0;
+                    if (double.IsNaN(orientation)) orientation = 1;
 
                     //Create histogram from given magnitude and orientation.
                     CreateHist(magnitude, orientation);
@@ -271,8 +238,10 @@ namespace testPV
             return listOfCells;
         }
 
+        [Obsolete]
         /// <summary>
         /// Recreate image from cells with visualized descriptors.
+        /// This function was used with first approach but now it is obsolete.
         /// </summary>
         /// <param name="cells"></param>
         /// <param name="originalImg"></param>
@@ -308,21 +277,26 @@ namespace testPV
         {
             Bitmap tempBmp = null;
 
-            if (index < 2 || index > 32) tempBmp = DrawVerticalLine(bmp);
-            if (index > 13 && index < 20) tempBmp = DrawVerticalLine(bmp);
+            if (index < 2 || index > 32) tempBmp = DrawVerticalLine(bmp);//
+            if (index > 14 && index < 20) tempBmp = DrawVerticalLine(bmp);//
 
-            if (index > 5 && index < 11) tempBmp = DrawHorizontalLine(bmp);
+            if (index > 5 && index < 11) tempBmp = DrawHorizontalLine(bmp);//
             if (index > 23 && index < 29) tempBmp = DrawHorizontalLine(bmp);
 
-            if (index >= 2 && index < 6) tempBmp = DrawLineFromLeftDownToRightUp(bmp);
+            if (index >= 2 && index < 6) tempBmp = DrawLineFromLeftDownToRightUp(bmp);//
             if (index >= 20 && index < 24) tempBmp = DrawLineFromLeftDownToRightUp(bmp);
 
-            if (index >= 11 && index < 14) tempBmp = DrawLineFromLeftUpToRightDown(bmp);
+            if (index >= 11 && index < 15) tempBmp = DrawLineFromLeftUpToRightDown(bmp);
             if (index >= 29 && index < 33) tempBmp = DrawLineFromLeftUpToRightDown(bmp);
 
             return tempBmp;
         }
 
+        /// <summary>
+        /// Visualize descriptors with direction arrows based on HoG values.
+        /// </summary>
+        /// <param name="hist"></param>
+        /// <returns> Visualized descriptor as bitmap </returns>
         private Bitmap VisualizeDescriptor(double[] hist)
         {
             // Combine values from histogram to get sets of degrees. 
@@ -330,25 +304,27 @@ namespace testPV
             List<double> setsOfDegrees = new List<double>()
             {
                 // Sorted list of sets of degrees, starting from 0 (+- 2 values).
-                hist[34] + hist[35] + hist[0] + hist[1],
-                hist[2] + hist[3] + hist[4] + hist[5] + hist[6],
-                hist[7] + hist[8] + hist[9] + hist[10],
-                hist[11] + hist[12] + hist[13] + hist[14] + hist[15],
-                hist[16] + hist[17] + hist[18] + hist[19],
-                hist[20] + hist[21] + hist[22] + hist[23] + hist[25],
-                hist[25] + hist[26] + hist[27] + hist[28],
-                hist[29] + hist[30] + hist[31] + hist[32] + hist[33]
+                hist[33] + hist[34] + hist[35] + hist[0] + hist[1],
+                hist[2] + hist[3] + hist[4] + hist[5],
+                hist[6] + hist[7] + hist[8] + hist[9] + hist[10],
+                hist[11] + hist[12] + hist[13] + hist[14],
+                hist[15] + hist[16] + hist[17] + hist[18] + hist[19],
+                hist[20] + hist[21] + hist[22] + hist[23],
+                hist[24] + hist[25] + hist[26] + hist[27] + hist[28],
+                hist[29] + hist[30] + hist[31] + hist[32]
             };
 
             double maxValue = setsOfDegrees.Max();
             int indexOfMax = setsOfDegrees.ToList().IndexOf(maxValue);
 
-            // After this, max value should be 50 (max/max = 1 * 50), (0,5/1 = 0,5*50 = 25)
+            // After this, max value should be 50 - max length of arrow
             List<double> lengthsOfArrows = new List<double>();
             foreach(double set in setsOfDegrees)
             {
                 lengthsOfArrows.Add((set / setsOfDegrees[indexOfMax]) * 50);
             }
+
+
             Bitmap b = new Bitmap(this.pictureBox3.ClientSize.Width, this.pictureBox3.ClientSize.Height);
 
             using (Graphics g = Graphics.FromImage(b))
@@ -561,8 +537,21 @@ namespace testPV
 
                     }
                 }
-            
-                
+
+                int numOfCells = 8;
+                int cellSize = 40;
+                Pen p = new Pen(Color.Black);
+
+                for (int y = 0; y < numOfCells * 2 + 1; ++y)
+                {
+                    e.Graphics.DrawLine(p, 0, y * cellSize, numOfCells * cellSize, y * cellSize);
+                }
+
+                for (int x = 0; x < numOfCells + 1; ++x)
+                {
+                    e.Graphics.DrawLine(p, x * cellSize, 0, x * cellSize, numOfCells * cellSize *2);
+                }
+
             }
         }
     }
