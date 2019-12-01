@@ -27,5 +27,5 @@ Spájanie k¾úèovıch bodov je posledná èas algoritmu SIFT. Pre dva rôzne obrázky 
 Pod¾a tıchto údajov vieme spoji k¾úèové body a toto spojenie zobrazi. Bıva konvenciou	obmedzi poèet zobrazenıch spojení - kvôli preh¾adnosti.
 Aplikácie SIFT algoritmu sú napríklad: rozpoznávanie objektov/osôb, spájanie obrázkov 
 (napr.: privyttváraní panoramatickej fotografie), rozpoznávanie gest 
-Súvisiaci algoritmus je napríklad [SURF] (https://en.wikipedia.org/wiki/Speeded_up_robust_features), èo je vlastne jednoduchšia a rıchlejšia verzia algoritmu SIFT.
+Súvisiaci algoritmus je napríklad [SURF](https://en.wikipedia.org/wiki/Speeded_up_robust_features), èo je vlastne jednoduchšia a rıchlejšia verzia algoritmu SIFT.
 
