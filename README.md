@@ -25,7 +25,14 @@ S tımito hodnotami dokáeme deskriptor vizualizova.
 ### Feature matching
 Spájanie k¾úèovıch bodov je posledná èas algoritmu SIFT. Pre dva rôzne obrázky sú vytvorené k¾úèové body a ich unikátne deskriptory. 
 Pod¾a tıchto údajov vieme spoji k¾úèové body a toto spojenie zobrazi. Bıva konvenciou	obmedzi poèet zobrazenıch spojení - kvôli preh¾adnosti.
-Aplikácie SIFT algoritmu sú napríklad: rozpoznávanie objektov/osôb, spájanie obrázkov 
-(napr.: privyttváraní panoramatickej fotografie), rozpoznávanie gest 
-Súvisiaci algoritmus je napríklad [SURF](https://en.wikipedia.org/wiki/Speeded_up_robust_features), èo je vlastne jednoduchšia a rıchlejšia verzia algoritmu SIFT.
+### Aplikácie SIFT algoritmu 
+- rozpoznávanie objektov,
+- rozpoznávanie osôb, 
+- spájanie obrázkov (napr. pri vytváraní panoramatickej fotografie), 
+- rozpoznávanie gest a podobne. 
+
+### Súvisiace algoritmy:
+[SURF](https://en.wikipedia.org/wiki/Speeded_up_robust_features) je jednoduchšia a rıchlejšia verzia algoritmu SIFT.
+[Harris Corner Detector](https://en.wikipedia.org/wiki/Harris_Corner_Detector) slúi na extrakciu hrán a základnıch rysov obrázku.
+[FAST](https://opencv-python-tutroals.readthedocs.io/en/latest/py_tutorials/py_feature2d/py_fast/py_fast.html) je algoritmus na detekciu hrán a základnıch rysov obrázku a bol vyvinutı hlavne pre pouitie v reálnom èase.
 
