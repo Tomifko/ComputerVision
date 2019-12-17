@@ -47,7 +47,8 @@ namespace testPV
             //{
                 stopwatch.Restart();
                 // Load image and convert it to grayscale
-                Bitmap image = new Bitmap("C:\\Users\\Tomifko\\Desktop\\PV\\source\\a.png");
+                Bitmap image = new Bitmap("C:\\Users\\Tomifko\\Desktop\\PV\\source\\bolt.jpg");
+                pictureBox1.Image = image;
                 Bitmap grayscaleImg = MakeGrayscale(image);
 
                 // Create list of cells == divide image to separate parts.
@@ -82,7 +83,7 @@ namespace testPV
                 pictureBox2.Image = result;
 
                 // Save final image to computer.
-                result.Save(("C:\\Users\\Tomifko\\Desktop\\PV\\source\\boltresult.jpg"));
+                result.Save(("C:\\Users\\Tomifko\\Desktop\\PV\\source\\result.jpg"));
 
                 // Measure time passed from beginning of program and add this value to list.
                 // List is used to store 1000 of this values.
