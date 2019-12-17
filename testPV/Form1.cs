@@ -19,8 +19,10 @@ namespace testPV
         double[] bins = new double[36];
         // Stopwatch used to measure times.
         Stopwatch stopwatch = new Stopwatch();
-
+        Stopwatch totalStopwatch = new Stopwatch();
+        // Value in which will be temporarily stored bmp of descriptor visualization.
         Bitmap _arrow = null;
+        // List which contains every descriptor visualisation.
         List<Bitmap> arrows = new List<Bitmap>();
 
         #endregion
@@ -41,10 +43,15 @@ namespace testPV
         private void Form1_Load(object sender, EventArgs e)
         {
             List<TimeSpan> timeSpans = new List<TimeSpan>();
+            totalStopwatch.Start();
+            stopwatch.Start();
+            for (int i = 0; i < 1000; i++)
+            {
+                pictureBox1.Image = null;
+                pictureBox2.Image = null;
+                pictureBox3.Image = null;
+                arrows = new List<Bitmap>();
 
-            //stopwatch.Start();
-            //for (int i = 0; i < 1000; i++)
-            //{
                 stopwatch.Restart();
                 // Load image and convert it to grayscale
                 Bitmap image = new Bitmap("C:\\Users\\Tomifko\\Desktop\\PV\\source\\bolt.jpg");
@@ -60,52 +67,55 @@ namespace testPV
                 // Create list of descriptors represented with arrays.
                 List<Bitmap> listOfArrayDescriptors = new List<Bitmap>();
 
-            // Creates a list of histograms for each cell.
-            foreach (Bitmap cell in listOfCells)
-                {
-                    double[] hist = GetHistForEveryCell(cell);
-                    listOfHistograms.Add(hist);
+                // Creates a list of histograms for each cell.
+                foreach (Bitmap cell in listOfCells)
+                    {
+                        double[] hist = GetHistForEveryCell(cell);
+                        listOfHistograms.Add(hist);
 
-                    //Find index of max value in array and index of it.
-                    double maxValue = hist.Max();
-                    int maxIndex = hist.ToList().IndexOf(maxValue);
+                        //Find index of max value in array and index of it.
+                        double maxValue = hist.Max();
+                        int maxIndex = hist.ToList().IndexOf(maxValue);
                     
-                    listOfDescriptors.Add(VisualizeDescriptor(maxIndex, cell));
-                    Bitmap tmpBmp = VisualizeDescriptor(hist);
-                    arrows.Add(tmpBmp);
-                    Bitmap resizedArrayDescriptor = new Bitmap(tmpBmp, new Size(8, 8));
-                    listOfArrayDescriptors.Add(resizedArrayDescriptor);
+                        listOfDescriptors.Add(VisualizeDescriptor(maxIndex, cell));
+                        Bitmap tmpBmp = VisualizeDescriptor(hist);
+                        arrows.Add(tmpBmp);
+                        Bitmap resizedArrayDescriptor = new Bitmap(tmpBmp, new Size(8, 8));
+                        listOfArrayDescriptors.Add(resizedArrayDescriptor);
 
-                }
+                    }
 
                 // Connect cells to one final image.
                 Bitmap result = RecreateBitmapFromCells(listOfDescriptors, grayscaleImg);
                 pictureBox2.Image = result;
 
                 // Save final image to computer.
-                result.Save(("C:\\Users\\Tomifko\\Desktop\\PV\\source\\result.jpg"));
+                result.Save((@"C:\\Users\\Tomifko\\Desktop\\PV\\source\\result.jpg"));
 
                 // Measure time passed from beginning of program and add this value to list.
                 // List is used to store 1000 of this values.
-                //timeSpans.Add(stopwatch.Elapsed);
-            //}
+                timeSpans.Add(stopwatch.Elapsed);
+            }
+            // Total time of 1000 measurements.
+            TimeSpan totalTime = totalStopwatch.Elapsed;
 
             // After 1000 measurements calculate average value of time passed and write it to .txt file.
-            //using (System.IO.StreamWriter file =
-            //    new System.IO.StreamWriter(@"C:\\Users\\Tomifko\\Desktop\\WriteLines2.txt", true))
-            //{
-            //    file.WriteLine("Average time: " + AverageTime.Average(timeSpans));
-            //}
+            using (System.IO.StreamWriter file =
+                new System.IO.StreamWriter(@"C:\\Users\\Tomifko\\Desktop\\Measurements.txt", true))
+            {
+                file.WriteLine("Average time: " + AverageTime.Average(timeSpans));
+                file.WriteLine("Total time: " + totalTime);
+            }
 
-            //// Write every value to .txt file.
-            //foreach (TimeSpan times in timeSpans)
-            //{
-            //    using (System.IO.StreamWriter file =
-            //        new System.IO.StreamWriter(@"C:\\Users\\Tomifko\\Desktop\\WriteLines2.txt", true))
-            //    {
-            //        file.WriteLine(times);
-            //    }
-            //}
+            // Write every value to .txt file.
+            foreach (TimeSpan times in timeSpans)
+            {
+                using (System.IO.StreamWriter file =
+                    new System.IO.StreamWriter(@"C:\\Users\\Tomifko\\Desktop\\Measurements.txt", true))
+                {
+                    file.WriteLine(times);
+                }
+            }
 
         }
         #endregion
